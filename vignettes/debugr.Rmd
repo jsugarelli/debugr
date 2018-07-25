@@ -1,0 +1,188 @@
+---
+title: "Debug outputs with debugr"
+author: "Joachim Zuckarelli"
+# date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{debugr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+`debugr` is a package designed to support debugging in R. It mainly provides the `dwatch()` function which prints a debug output to the console or to a file. A debug output can consist of a static text message, the values of one or more objects (potentially transformed by applying some functions) or the value of one or multiple (more complex) R expressions. 
+
+Whether or not a debug message is displayed can be made dependent on the evaluation of a criterion phrased as an R expression. Generally, debug messages are only shown if the debug mode is activated. The debug mode is activated and deactivated with `debugr_switchOn()` and `debugr_switchOff()`, respectively, which change the logical `debugr.active` value in the global options. Since debug messages are only displayed in debug mode, the `dwatch()` function calls can even remain in the original code as they remain silent and won't have any effect until the debug mode is switched on again.
+
+
+## Using debugr
+
+Let's have a closer look at how to work with `debugr`.
+
+Assume you have developed the following function:
+
+```r
+myfunction <- function(x) {
+  justastring <- "Not much information here"
+  z <- 1
+
+  for(i in 1:x) {
+    z <- z * i
+  }
+}
+```
+
+With `debugr` it is now possible to add a debug output to this function. Say, you want to see how the variable `z` develops over time, but only if `z > 40000`. To achieve that, we include a simple call to `dwatch()` into our funtion `myfunction()` (and attach the `debugr` package first by calling `library(debugr)`):
+
+```{r}
+library(debugr)
+
+myfunction <- function(x) {
+  justastring <- "Not much information here"
+  z <- 1
+
+  for(i in 1:x) {
+    dwatch(crit = "z > 40000", objs = c("z"))
+    z <- z * i
+  }
+  invisible(z)
+}
+```
+
+Please notice that the name of the object we want to print out is provided in the argument `objs` _as a  string_, as a string. So, `objs` is a vector of all the objects we want to have printed.
+
+Now, we can call our function `myfunction()`:
+```{r}
+myfunction(10)
+```
+
+What happens? 
+
+_Nothing_. 
+
+Didn't we want to see a debug output?
+
+The reason why we don't see anything is that the _debug mode_ is currently switched off. Let's turn it on and try again:
+```{r}
+debugr_switchOn()
+
+myfunction(10)
+```
+
+This time, we get two debug outputs. Every time the variabe `z` exceeds the limit of 40,000 (we use the expression ` z > 40000` as `dwatch()`'s criterion argument `crit`) its value is printed by `dwatch()`.
+
+Turning on the debug mode brings `dwatch()` to life. As `dwatch()` remains silent as long as the debug mode is turned off (which is the 'normal state of the world'), you could even leave the `dwatch()` call in your code, it wouldn't do any harm. In fact, nobody would ever notice.
+If you want to check if the debug mode is enabled, just call `debugr_isActive()`
+```{r}
+debugr_isActive()
+```
+To turn the debug mode off again after you have finished your work, call `debugr_switchOn()`'s counterpart, `debugr_switchOff()`:
+```r
+debugr_switchOff()
+```
+
+If you wanted to print the debug output into a file, you could use `dwatch()`'s `filename` argument to provide a file. In this case, no debug output would be displayed in the R console.
+
+
+## Some more sophisticated applications
+
+### Applying functions to debug objects
+
+In the above example, we have simply printed the value of `z`. But, of course, we could also do some more sophisticated things. For example, if we wanted to have a prettier output, we could modify our call of `dwatch()` like this:
+```r
+dwatch(crit = "z > 40000", objs = c("z"), funs=c("format"), args = as.list(c(big.mark = "\",\"")))
+```
+Putting this call into our function `myfunction()` from above yields:
+
+```{r echo = FALSE}
+myfunction <- function(x) {
+  justastring <- "Not much information here"
+  z <- 1
+
+  for(i in 1:x) {
+    dwatch(crit = "z > 40000", objs = c("z"), funs=c("format"), args = as.list(c(big.mark = "\",\"")))
+    z <- z * i
+  }
+  invisible(z)
+}
+
+myfunction(10)
+```
+
+Here, we apply the function() `format` to our object `z` to include a comma as a seperator. Two things are noteworthy here:
+
+1. The name of the function that is to be applied to our object `z` is provided in the argument `funs` _as a string_. In our example, we have only one object. However, if we had more objects, we could apply a different function to each of them, leading to `funs` look like `funs = c("format", NULL, "mean")`, for example. In this case, we would have `format()` applied to the first object, no function applied to the second, and `mean()` to the third one. 
+
+2. While the function `format()` is assumed to take our object `z` as its first argument, we can supply additional arguments using `dwatch()`'s `args` argument. This is a list of vectors, one for each function in `funs`. The elements of the vector are named and the elements' names are the names of the (additional) arguments of the respective function in `funs`. As these vectors are iternally interpreted as character vectors, make sure you escape any quotation mark properly, as we did in the above example. Don't worry too much about these vectors being interpreted as character vectors. If your `funs` argument is `funs = c("format", NULL, "mean")` then `args = as.list(c(big.mark = "\",\""), NULL, c(na.rm = TRUE, trail = 0.2))` will work perfectly fine (even though you don't out `TRUE` an `0.2` in quotation marks).
+
+By the way: If you use `dwatch()` to print a dataframe, `dwatch()` uses `View()` as the default way of displaying it. If you want to have it printed to the R console, just apply `print()` with `funs = c("print")`.
+
+
+### Using expressions
+
+In the above example, we format the debug output by using `dwatch()`'s `funs` argument. We would accomplish the same effect by phrasing our command as an R expression and let `dwatch()` evaluate that expression:
+
+```{r}
+myfunction <- function(x) {
+  justastring <- "Not much information here"
+  z <- 1
+
+  for(i in 1:x) {
+    dwatch(crit = "z > 40000", expr=c("format(z, big.mark = \",\")"))
+    z <- z * i
+  }
+  invisible(z)
+}
+
+myfunction(10)
+```
+
+The `expr` argument allows you to print more complex expressions; however, in our case here, this expression is just a simple function call. Of course, you can print as many expressions as you like, as `expr` is a vector of strings.
+
+
+
+### Printing environments
+
+Sometimes you probably don't want to list all the objects that you want to include in your debug output. You just want to print _all_ objects. This is easy to accomplish with `dwatch()`'s `show.all` argument. Look at the following example:
+
+```{r}
+myfunction <- function(x) {
+  justastring <- "Not much information here"
+  z <- 1
+
+  for(i in 1:x) {
+    dwatch(crit = "z > 40000", show.all = TRUE)
+    z <- z * i
+  }
+  invisible(z)
+}
+
+myfunction(10)
+```
+
+This time, `dwatch()` prints all objects. More precisely, it prints all objects _in the environment_ from which `dwatch()` was called.
+
+Needless to say, that you can easily combine the use of the arguments `objs`, `expr` and `show.all` in one `dwatch()` call.
+
+
+### More things you can do
+
+Here are some more options to customize your use of `dwatch()`:
+
+* Add a (static) text message with the `msg` argument.
+
+* Remove the upper and lower border of the `dwatch()` outputs by setting `show.frame = FALSE`.
+
+* Include the source code section surrounding the call of `dwatch()` in the output. To do this, you need to add an arbitrary unique ID to the call of `dwatch()` with the `unique.id` argument (which is just a string). `dwatch()` will try to figure out your source file and print the code. This works only when you run your code from a saved script (not from the console), and it works best when you are using the R Studio IDE.
+
+* If you want to work with a `uniqe.id` (which will also be displayed in the caption of the `dwatch()` message) but don't want to have the source code printed that surrounds the `dwatch()` call, set `suppress.source = TRUE`.
+
+* If you want stop the execution of your as soon as the `crit` criterion is fulfilled, use `halt = TRUE`. The debug outputs are shown in any case.

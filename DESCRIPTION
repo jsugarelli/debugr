@@ -1,0 +1,21 @@
+Package: debugr
+Title: Debug Tool to Watch Objects/Expressions While Running an R Script
+Version: 0.0.1
+Authors@R: person("Joachim", "Zuckarelli", email = "joachim@zuckarelli.de", role = c("aut", "cre"))
+Maintainer: Joachim Zuckarelli <joachim@zuckarelli.de>
+Description: Tool to print out the value of R objects/expressions while running
+  an R script. Outputs can be made dependent on user-defined conditions/criteria. 
+  Debug messages only appear when a global option for debugging is set. 
+  This way, 'debugr' code can even remain in the debugged code for later use 
+  without any negative effects during normal runtime.
+BugReports: https://github.com/jsugarelli/debugr/issues
+URL: https://github.com/jsugarelli/debugr/
+Depends: R (>= 3.5.0)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Imports: utils, rprojroot, rstudioapi
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

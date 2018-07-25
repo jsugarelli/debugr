@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Joachim Zuckarelli" />
+
+
+<title>Debug outputs with debugr</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Debug outputs with debugr</h1>
+<h4 class="author"><em>Joachim Zuckarelli</em></h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><code>debugr</code> is a package designed to support debugging in R. It mainly provides the <code>dwatch()</code> function which prints a debug output to the console or to a file. A debug output can consist of a static text message, the values of one or more objects (potentially transformed by applying some functions) or the value of one or multiple (more complex) R expressions.</p>
+<p>Whether or not a debug message is displayed can be made dependent on the evaluation of a criterion phrased as an R expression. Generally, debug messages are only shown if the debug mode is activated. The debug mode is activated and deactivated with <code>debugr_switchOn()</code> and <code>debugr_switchOff()</code>, respectively, which change the logical <code>debugr.active</code> value in the global options. Since debug messages are only displayed in debug mode, the <code>dwatch()</code> function calls can even remain in the original code as they remain silent and won’t have any effect until the debug mode is switched on again.</p>
+</div>
+<div id="using-debugr" class="section level2">
+<h2>Using debugr</h2>
+<p>Let’s have a closer look at how to work with <code>debugr</code>.</p>
+<p>Assume you have developed the following function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">myfunction &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+  justastring &lt;-<span class="st"> &quot;Not much information here&quot;</span>
+  z &lt;-<span class="st"> </span><span class="dv">1</span>
+
+  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>x) {
+    z &lt;-<span class="st"> </span>z <span class="op">*</span><span class="st"> </span>i
+  }
+}</code></pre></div>
+<p>With <code>debugr</code> it is now possible to add a debug output to this function. Say, you want to see how the variable <code>z</code> develops over time, but only if <code>z &gt; 40000</code>. To achieve that, we include a simple call to <code>dwatch()</code> into our funtion <code>myfunction()</code> (and attach the <code>debugr</code> package first by calling <code>library(debugr)</code>):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(debugr)
+
+myfunction &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+  justastring &lt;-<span class="st"> &quot;Not much information here&quot;</span>
+  z &lt;-<span class="st"> </span><span class="dv">1</span>
+
+  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>x) {
+    <span class="kw">dwatch</span>(<span class="dt">crit =</span> <span class="st">&quot;z &gt; 40000&quot;</span>, <span class="dt">objs =</span> <span class="kw">c</span>(<span class="st">&quot;z&quot;</span>))
+    z &lt;-<span class="st"> </span>z <span class="op">*</span><span class="st"> </span>i
+  }
+  <span class="kw">invisible</span>(z)
+}</code></pre></div>
+<p>Please notice that the name of the object we want to print out is provided in the argument <code>objs</code> <em>as a string</em>, as a string. So, <code>objs</code> is a vector of all the objects we want to have printed.</p>
+<p>Now, we can call our function <code>myfunction()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">myfunction</span>(<span class="dv">10</span>)</code></pre></div>
+<p>What happens?</p>
+<p><em>Nothing</em>.</p>
+<p>Didn’t we want to see a debug output?</p>
+<p>The reason why we don’t see anything is that the <em>debug mode</em> is currently switched off. Let’s turn it on and try again:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">debugr_switchOn</span>()
+
+<span class="kw">myfunction</span>(<span class="dv">10</span>)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** z:</span>
+<span class="co">#&gt; [1] 40320</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ---------------------------------------------------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** z:</span>
+<span class="co">#&gt; [1] 362880</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ---------------------------------------------------------------------------</span></code></pre></div>
+<p>This time, we get two debug outputs. Every time the variabe <code>z</code> exceeds the limit of 40,000 (we use the expression <code>z &gt; 40000</code> as <code>dwatch()</code>’s criterion argument <code>crit</code>) its value is printed by <code>dwatch()</code>.</p>
+<p>Turning on the debug mode brings <code>dwatch()</code> to life. As <code>dwatch()</code> remains silent as long as the debug mode is turned off (which is the ‘normal state of the world’), you could even leave the <code>dwatch()</code> call in your code, it wouldn’t do any harm. In fact, nobody would ever notice. If you want to check if the debug mode is enabled, just call <code>debugr_isActive()</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">debugr_isActive</span>()
+<span class="co">#&gt; [1] TRUE</span></code></pre></div>
+<p>To turn the debug mode off again after you have finished your work, call <code>debugr_switchOn()</code>’s counterpart, <code>debugr_switchOff()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">debugr_switchOff</span>()</code></pre></div>
+<p>If you wanted to print the debug output into a file, you could use <code>dwatch()</code>’s <code>filename</code> argument to provide a file. In this case, no debug output would be displayed in the R console.</p>
+</div>
+<div id="some-more-sophisticated-applications" class="section level2">
+<h2>Some more sophisticated applications</h2>
+<div id="applying-functions-to-debug-objects" class="section level3">
+<h3>Applying functions to debug objects</h3>
+<p>In the above example, we have simply printed the value of <code>z</code>. But, of course, we could also do some more sophisticated things. For example, if we wanted to have a prettier output, we could modify our call of <code>dwatch()</code> like this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dwatch</span>(<span class="dt">crit =</span> <span class="st">&quot;z &gt; 40000&quot;</span>, <span class="dt">objs =</span> <span class="kw">c</span>(<span class="st">&quot;z&quot;</span>), <span class="dt">funs=</span><span class="kw">c</span>(<span class="st">&quot;format&quot;</span>), <span class="dt">args =</span> <span class="kw">as.list</span>(<span class="kw">c</span>(<span class="dt">big.mark =</span> <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">,</span><span class="ch">\&quot;</span><span class="st">&quot;</span>)))</code></pre></div>
+<p>Putting this call into our function <code>myfunction()</code> from above yields:</p>
+<pre><code>#&gt; 
+#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------
+#&gt; 
+#&gt; ** z:
+#&gt; [1] &quot;40,320&quot;
+#&gt; 
+#&gt; ---------------------------------------------------------------------------
+#&gt; 
+#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------
+#&gt; 
+#&gt; ** z:
+#&gt; [1] &quot;362,880&quot;
+#&gt; 
+#&gt; ---------------------------------------------------------------------------</code></pre>
+<p>Here, we apply the function() <code>format</code> to our object <code>z</code> to include a comma as a seperator. Two things are noteworthy here:</p>
+<ol style="list-style-type: decimal">
+<li><p>The name of the function that is to be applied to our object <code>z</code> is provided in the argument <code>funs</code> <em>as a string</em>. In our example, we have only one object. However, if we had more objects, we could apply a different function to each of them, leading to <code>funs</code> look like <code>funs = c(&quot;format&quot;, NULL, &quot;mean&quot;)</code>, for example. In this case, we would have <code>format()</code> applied to the first object, no function applied to the second, and <code>mean()</code> to the third one.</p></li>
+<li><p>While the function <code>format()</code> is assumed to take our object <code>z</code> as its first argument, we can supply additional arguments using <code>dwatch()</code>‘s <code>args</code> argument. This is a list of vectors, one for each function in <code>funs</code>. The elements of the vector are named and the elements’ names are the names of the (additional) arguments of the respective function in <code>funs</code>. As these vectors are iternally interpreted as character vectors, make sure you escape any quotation mark properly, as we did in the above example. Don’t worry too much about these vectors being interpreted as character vectors. If your <code>funs</code> argument is <code>funs = c(&quot;format&quot;, NULL, &quot;mean&quot;)</code> then <code>args = as.list(c(big.mark = &quot;\&quot;,\&quot;&quot;), NULL, c(na.rm = TRUE, trail = 0.2))</code> will work perfectly fine (even though you don’t out <code>TRUE</code> an <code>0.2</code> in quotation marks).</p></li>
+</ol>
+<p>By the way: If you use <code>dwatch()</code> to print a dataframe, <code>dwatch()</code> uses <code>View()</code> as the default way of displaying it. If you want to have it printed to the R console, just apply <code>print()</code> with <code>funs = c(&quot;print&quot;)</code>.</p>
+</div>
+<div id="using-expressions" class="section level3">
+<h3>Using expressions</h3>
+<p>In the above example, we format the debug output by using <code>dwatch()</code>’s <code>funs</code> argument. We would accomplish the same effect by phrasing our command as an R expression and let <code>dwatch()</code> evaluate that expression:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">myfunction &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+  justastring &lt;-<span class="st"> &quot;Not much information here&quot;</span>
+  z &lt;-<span class="st"> </span><span class="dv">1</span>
+
+  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>x) {
+    <span class="kw">dwatch</span>(<span class="dt">crit =</span> <span class="st">&quot;z &gt; 40000&quot;</span>, <span class="dt">expr=</span><span class="kw">c</span>(<span class="st">&quot;format(z, big.mark = </span><span class="ch">\&quot;</span><span class="st">,</span><span class="ch">\&quot;</span><span class="st">)&quot;</span>))
+    z &lt;-<span class="st"> </span>z <span class="op">*</span><span class="st"> </span>i
+  }
+  <span class="kw">invisible</span>(z)
+}
+
+<span class="kw">myfunction</span>(<span class="dv">10</span>)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** Expression: format(z, big.mark = &quot;,&quot;)</span>
+<span class="co">#&gt; [1] &quot;40,320&quot;</span>
+<span class="co">#&gt; ---------------------------------------------------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** Expression: format(z, big.mark = &quot;,&quot;)</span>
+<span class="co">#&gt; [1] &quot;362,880&quot;</span>
+<span class="co">#&gt; ---------------------------------------------------------------------------</span></code></pre></div>
+<p>The <code>expr</code> argument allows you to print more complex expressions; however, in our case here, this expression is just a simple function call. Of course, you can print as many expressions as you like, as <code>expr</code> is a vector of strings.</p>
+</div>
+<div id="printing-environments" class="section level3">
+<h3>Printing environments</h3>
+<p>Sometimes you probably don’t want to list all the objects that you want to include in your debug output. You just want to print <em>all</em> objects. This is easy to accomplish with <code>dwatch()</code>’s <code>show.all</code> argument. Look at the following example:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">myfunction &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+  justastring &lt;-<span class="st"> &quot;Not much information here&quot;</span>
+  z &lt;-<span class="st"> </span><span class="dv">1</span>
+
+  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>x) {
+    <span class="kw">dwatch</span>(<span class="dt">crit =</span> <span class="st">&quot;z &gt; 40000&quot;</span>, <span class="dt">show.all =</span> <span class="ot">TRUE</span>)
+    z &lt;-<span class="st"> </span>z <span class="op">*</span><span class="st"> </span>i
+  }
+  <span class="kw">invisible</span>(z)
+}
+
+<span class="kw">myfunction</span>(<span class="dv">10</span>)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** i:</span>
+<span class="co">#&gt; [1] 9</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** justastring:</span>
+<span class="co">#&gt; [1] &quot;Not much information here&quot;</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** x:</span>
+<span class="co">#&gt; [1] 10</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** z:</span>
+<span class="co">#&gt; [1] 40320</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ---------------------------------------------------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ----------------------------- DEBUGR MESSAGE ------------------------------</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** i:</span>
+<span class="co">#&gt; [1] 10</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** justastring:</span>
+<span class="co">#&gt; [1] &quot;Not much information here&quot;</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** x:</span>
+<span class="co">#&gt; [1] 10</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ** z:</span>
+<span class="co">#&gt; [1] 362880</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ---------------------------------------------------------------------------</span></code></pre></div>
+<p>This time, <code>dwatch()</code> prints all objects. More precisely, it prints all objects <em>in the environment</em> from which <code>dwatch()</code> was called.</p>
+<p>Needless to say, that you can easily combine the use of the arguments <code>objs</code>, <code>expr</code> and <code>show.all</code> in one <code>dwatch()</code> call.</p>
+</div>
+<div id="more-things-you-can-do" class="section level3">
+<h3>More things you can do</h3>
+<p>Here are some more options to customize your use of <code>dwatch()</code>:</p>
+<ul>
+<li><p>Add a (static) text message with the <code>msg</code> argument.</p></li>
+<li><p>Remove the upper and lower border of the <code>dwatch()</code> outputs by setting <code>show.frame = FALSE</code>.</p></li>
+<li><p>Include the source code section surrounding the call of <code>dwatch()</code> in the output. To do this, you need to add an arbitrary unique ID to the call of <code>dwatch()</code> with the <code>unique.id</code> argument (which is just a string). <code>dwatch()</code> will try to figure out your source file and print the code. This works only when you run your code from a saved script (not from the console), and it works best when you are using the R Studio IDE.</p></li>
+<li><p>If you want to work with a <code>uniqe.id</code> (which will also be displayed in the caption of the <code>dwatch()</code> message) but don’t want to have the source code printed that surrounds the <code>dwatch()</code> call, set <code>suppress.source = TRUE</code>.</p></li>
+<li><p>If you want stop the execution of your as soon as the <code>crit</code> criterion is fulfilled, use <code>halt = TRUE</code>. The debug outputs are shown in any case.</p></li>
+</ul>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
